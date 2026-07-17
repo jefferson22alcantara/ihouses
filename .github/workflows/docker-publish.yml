@@ -10,6 +10,7 @@ on:
       - "web/**"
       - "!web/README.md"
       - "db/schema.sql"
+      - "services/funda-client/**"
       - ".github/workflows/docker-publish.yml"
   workflow_dispatch:
 
@@ -33,6 +34,9 @@ jobs:
           - image: web
             context: web
             file: web/Dockerfile
+          - image: funda-client
+            context: services/funda-client
+            file: services/funda-client/Dockerfile
 
     steps:
       - name: Checkout

@@ -1,6 +1,7 @@
 import random
 import uuid
-from dataclasses import dataclass
+
+from app.scraping.base import Listing
 
 _LISTING_TEMPLATES = [
     {
@@ -41,21 +42,11 @@ _LISTING_TEMPLATES = [
 ]
 
 
-@dataclass(frozen=True, slots=True)
-class Listing:
-    title: str
-    price: float
-    description: str
-    url: str
-    city: str
-    source: str
-
-
 def fetch_new_listing() -> Listing:
-    """Simulates a single newly-scraped listing from a Dutch housing platform.
-
-    Structured as a drop-in seam: swap the body for a real Playwright/BeautifulSoup
-    scraper later without touching callers.
+    """Simulates a single newly-scraped listing. Used as the demo/dev data
+    source when FUNDA_ENABLED is false (see app/config.py) so local
+    development and the existing pipeline tests don't depend on real
+    external services.
     """
     template = random.choice(_LISTING_TEMPLATES)
     price = template["base_price"] + random.choice([-50, 0, 50, 100])

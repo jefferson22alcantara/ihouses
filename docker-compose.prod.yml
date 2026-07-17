@@ -8,11 +8,20 @@ services:
     restart: unless-stopped
     env_file:
       - .env
+    environment:
+      FUNDA_CLIENT_URL: http://funda-client:8000
     depends_on:
       db:
         condition: service_healthy
       redis:
         condition: service_healthy
+
+  # See services/funda-client/NOTICE.md: isolated on purpose (AGPL-3.0
+  # dependency, kept out of the proprietary `api` image), internal-only.
+  # Only called when FUNDA_ENABLED=true in .env.
+  funda-client:
+    image: ghcr.io/jefferson22alcantara/ihouses-funda-client:latest
+    restart: unless-stopped
 
   web:
     image: ghcr.io/jefferson22alcantara/ihouses-web:latest

@@ -23,6 +23,14 @@ class Settings(BaseSettings):
     anthropic_api_key: SecretStr | None = None
     openai_api_key: SecretStr | None = None
 
+    scrape_interval_seconds: int = 30
+
+    # See services/funda-client/NOTICE.md: pyfunda is AGPL-3.0 and its use may
+    # violate Funda's Terms of Service. Off by default — only enable after
+    # accepting that risk for the target environment.
+    funda_enabled: bool = False
+    funda_client_url: str = "http://funda-client:8000"
+
 
 @lru_cache
 def get_settings() -> Settings:
