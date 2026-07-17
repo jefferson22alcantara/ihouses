@@ -1,6 +1,12 @@
+#
+resource "random_string" "random" {
+  length           = 5
+  special          = true
+  override_special = "/@£$"
+}
 # Grants SSH access to the server using the key provided via TF_VAR_ssh_public_key.
 resource "hcloud_ssh_key" "default" {
-  name       = "${var.server_name}-key"
+  name       = "${random_string.random.id}-${var.server_name}-key"
   public_key = var.ssh_public_key
 }
 
