@@ -10,7 +10,7 @@ export function renderAppIcon(size: number) {
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          background: "linear-gradient(135deg, #4f46e5 0%, #0b1220 100%)",
+          background: "linear-gradient(135deg, #e6003d 0%, #8a0026 100%)",
           borderRadius: size * 0.18,
         }}
       >

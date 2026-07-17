@@ -15,7 +15,7 @@ export function CopyButton({ text }: { text: string }) {
     <button
       type="button"
       onClick={handleCopy}
-      className="w-full rounded-lg border border-indigo-400/40 bg-indigo-500/10 px-3 py-2 text-sm font-medium text-indigo-300 transition-colors hover:bg-indigo-500/20"
+      className="w-full rounded-lg border border-brand/30 bg-brand/5 px-3 py-2 text-sm font-medium text-brand transition-colors hover:bg-brand/10"
     >
       {copied ? "Copied!" : "Copy AI motivation letter"}
     </button>

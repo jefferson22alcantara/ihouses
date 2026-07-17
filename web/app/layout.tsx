@@ -32,8 +32,8 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,
-  themeColor: "#4f46e5",
-  colorScheme: "dark",
+  themeColor: "#e6003d",
+  colorScheme: "light",
 };
 
 export default function RootLayout({
@@ -46,24 +46,34 @@ export default function RootLayout({
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col bg-slate-950 text-slate-100">
+      <body className="min-h-full flex flex-col bg-[var(--background)] text-[var(--foreground)]">
         <RegisterServiceWorker />
-        <header className="sticky top-0 z-10 border-b border-white/10 bg-slate-950/90 backdrop-blur">
-          <nav className="mx-auto flex max-w-md items-center justify-between px-4 py-3">
-            <span className="text-sm font-semibold tracking-tight text-white">
-              Ihouses
-            </span>
-            <div className="flex gap-4 text-sm">
-              <Link href="/dashboard" className="text-slate-300 hover:text-white">
-                Dashboard
+        <header className="sticky top-0 z-10 border-b border-black/10 bg-white/95 backdrop-blur">
+          <nav className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6">
+            <Link href="/dashboard" className="flex items-baseline gap-1">
+              <span className="text-lg font-extrabold tracking-tight text-brand">
+                i
+              </span>
+              <span className="text-lg font-extrabold tracking-tight text-neutral-900">
+                houses
+              </span>
+            </Link>
+            <div className="flex gap-5 text-sm font-medium text-neutral-600">
+              <Link href="/dashboard" className="transition-colors hover:text-brand">
+                Search
               </Link>
-              <Link href="/alerts" className="text-slate-300 hover:text-white">
+              <Link href="/alerts" className="transition-colors hover:text-brand">
                 Alerts
+              </Link>
+              <Link href="/profile" className="transition-colors hover:text-brand">
+                Profile
               </Link>
             </div>
           </nav>
         </header>
-        <main className="mx-auto w-full max-w-md flex-1 px-4 py-6">{children}</main>
+        <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-6 sm:px-6">
+          {children}
+        </main>
       </body>
     </html>
   );

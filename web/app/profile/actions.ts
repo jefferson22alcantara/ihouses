@@ -68,5 +68,5 @@ export async function saveProfileAndFilters(formData: FormData) {
     }
   });
 
-  revalidatePath("/dashboard");
+  revalidatePath("/profile");
 }

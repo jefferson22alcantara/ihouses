@@ -11,16 +11,16 @@ export default async function AlertsPage() {
   });
 
   return (
-    <div className="flex flex-col gap-6 pb-10">
+    <div className="mx-auto flex max-w-2xl flex-col gap-6 pb-10">
       <div>
-        <h1 className="text-xl font-semibold text-white">Alert history</h1>
-        <p className="mt-1 text-sm text-slate-400">
+        <h1 className="text-xl font-semibold text-neutral-900">Alert history</h1>
+        <p className="mt-1 text-sm text-neutral-500">
           Listings matched to your filters, with a ready-to-send motivation letter.
         </p>
       </div>
 
       {alerts.length === 0 ? (
-        <p className="rounded-xl border border-white/10 bg-slate-900/40 p-4 text-sm text-slate-400">
+        <p className="rounded-xl border border-neutral-200 bg-white p-4 text-sm text-neutral-500 shadow-sm">
           No matches yet. Once a listing matches your filters, it will show up here.
         </p>
       ) : (
@@ -28,16 +28,16 @@ export default async function AlertsPage() {
           {alerts.map((alert) => (
             <li
               key={alert.id}
-              className="flex flex-col gap-3 rounded-xl border border-white/10 bg-slate-900/40 p-4"
+              className="flex flex-col gap-3 rounded-xl border border-neutral-200 bg-white p-4 shadow-sm"
             >
               <div className="flex items-start justify-between gap-2">
-                <h2 className="font-medium text-white">{alert.listing_title}</h2>
-                <span className="shrink-0 rounded-full bg-white/5 px-2 py-0.5 text-xs text-slate-400">
+                <h2 className="font-medium text-neutral-900">{alert.listing_title}</h2>
+                <span className="shrink-0 rounded-full bg-neutral-100 px-2 py-0.5 text-xs text-neutral-500">
                   {alert.listing_source}
                 </span>
               </div>
 
-              <div className="flex items-center justify-between text-sm text-slate-400">
+              <div className="flex items-center justify-between text-sm text-neutral-500">
                 <span>
                   {alert.listing_price ? `€${Number(alert.listing_price).toFixed(0)}/mo` : "Price unknown"}
                 </span>
@@ -48,7 +48,7 @@ export default async function AlertsPage() {
                 href={alert.listing_url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-sm font-medium text-indigo-300 hover:text-indigo-200"
+                className="text-sm font-medium text-brand hover:text-brand-dark"
               >
                 View listing →
               </a>
@@ -56,8 +56,8 @@ export default async function AlertsPage() {
               {alert.motivation_letter && <CopyButton text={alert.motivation_letter} />}
 
               {!alert.sent_to_telegram && (
-                <p className="text-xs text-amber-400/80">
-                  Telegram alert not sent — configure a chat ID in your dashboard.
+                <p className="text-xs text-amber-600">
+                  Telegram alert not sent — configure a chat ID in your profile.
                 </p>
               )}
             </li>

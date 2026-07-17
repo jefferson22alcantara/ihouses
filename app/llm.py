@@ -1,12 +1,25 @@
+from decimal import Decimal
 from functools import lru_cache
+from typing import Protocol
 
 import anthropic
 
 from app.config import get_settings
-from app.models import UserProfile
 from app.scraping import Listing
 
 MODEL = "claude-opus-4-8"
+
+
+class ProfileLike(Protocol):
+    """Structural type satisfied by both `UserProfile` (ORM) and the
+    `/motivation-letter` request body, so a fresh, unpersisted profile can be
+    scored without round-tripping through the database.
+    """
+
+    profession: str | None
+    income_monthly: Decimal | float | None
+    has_pets: bool
+    lifestyle: str | None
 
 SYSTEM_PROMPT = """\
 Je bent een Nederlandse verhuurmakelaar-assistent die perfecte, overtuigende
@@ -25,7 +38,7 @@ Regels:
 """
 
 
-def _fallback_letter(profile: UserProfile, listing: Listing) -> str:
+def _fallback_letter(profile: ProfileLike, listing: Listing) -> str:
     pets_line = (
         "Ik heb geen huisdieren, wat het onderhoud van de woning eenvoudig houdt."
         if not profile.has_pets
@@ -52,7 +65,7 @@ def _client() -> anthropic.Anthropic | None:
     return anthropic.Anthropic(api_key=settings.anthropic_api_key.get_secret_value())
 
 
-def generate_motivation_letter(profile: UserProfile, listing: Listing) -> str:
+def generate_motivation_letter(profile: ProfileLike, listing: Listing) -> str:
     client = _client()
     if client is None:
         return _fallback_letter(profile, listing)

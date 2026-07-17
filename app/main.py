@@ -5,9 +5,11 @@ from contextlib import asynccontextmanager
 
 import redis.asyncio as redis
 from fastapi import FastAPI
+from pydantic import BaseModel
 
-from app import db, pipeline
+from app import db, llm, pipeline
 from app.config import get_settings
+from app.scraping import Listing
 
 logger = logging.getLogger("ihouses.main")
 settings = get_settings()
@@ -48,6 +50,53 @@ app = FastAPI(title="Ihouses", lifespan=lifespan)
 @app.get("/health")
 async def health() -> dict[str, str]:
     return {"status": "ok"}
+
+
+class MotivationLetterProfile(BaseModel):
+    profession: str | None = None
+    income_monthly: float | None = None
+    has_pets: bool = False
+    lifestyle: str | None = None
+
+
+class MotivationLetterListing(BaseModel):
+    title: str
+    price: float
+    description: str
+    city: str
+    url: str = ""
+    source: str = ""
+
+
+class MotivationLetterRequest(BaseModel):
+    profile: MotivationLetterProfile
+    listing: MotivationLetterListing
+
+
+class MotivationLetterResponse(BaseModel):
+    letter: str
+
+
+@app.post("/motivation-letter")
+async def create_motivation_letter(
+    payload: MotivationLetterRequest,
+) -> MotivationLetterResponse:
+    """Generates a Dutch motivation letter for a listing a user applies to
+    directly from the dashboard (the "Easy Apply" flow), reusing the same
+    prompt and fallback template as the background scrape pipeline.
+    """
+    listing = Listing(
+        title=payload.listing.title,
+        price=payload.listing.price,
+        description=payload.listing.description,
+        url=payload.listing.url,
+        city=payload.listing.city,
+        source=payload.listing.source,
+    )
+    letter = await asyncio.to_thread(
+        llm.generate_motivation_letter, payload.profile, listing
+    )
+    return MotivationLetterResponse(letter=letter)
 
 
 @app.post("/scrape/trigger")
