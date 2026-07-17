@@ -1,0 +1,54 @@
+name: Deploy
+
+on:
+  workflow_run:
+    workflows: ["Docker Publish"]
+    types: [completed]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: read
+
+jobs:
+  deploy:
+    name: Deploy to Hetzner
+    runs-on: ubuntu-latest
+    if: >
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.workflow_run.conclusion == 'success' &&
+       github.event.workflow_run.head_branch == 'main')
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          ssh-keyscan -H "${{ secrets.SERVER_HOST }}" >> ~/.ssh/known_hosts
+
+      - name: Sync production compose files
+        run: |
+          ssh -i ~/.ssh/id_ed25519 "${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}" "mkdir -p /opt/ihouses/db"
+          scp -i ~/.ssh/id_ed25519 docker-compose.prod.yml "${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:/opt/ihouses/docker-compose.prod.yml"
+          scp -i ~/.ssh/id_ed25519 db/schema.sql "${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:/opt/ihouses/db/schema.sql"
+
+      - name: Pull images and restart stack
+        run: |
+          echo "${{ secrets.GITHUB_TOKEN }}" | ssh -i ~/.ssh/id_ed25519 "${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}" '
+            set -e
+            docker login ghcr.io -u "${{ github.actor }}" --password-stdin
+            cd /opt/ihouses
+            docker compose -f docker-compose.prod.yml pull
+            docker compose -f docker-compose.prod.yml up -d --remove-orphans
+            docker image prune -f
+          '
+
+      - name: Health check
+        run: |
+          sleep 5
+          curl -fsS -o /dev/null -w "web responded with HTTP %{http_code}\n" \
+            "http://${{ secrets.SERVER_HOST }}/dashboard"

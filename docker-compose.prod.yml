@@ -1,0 +1,57 @@
+# Production stack for the Hetzner VPS. Images are pulled from GHCR (built by
+# .github/workflows/docker-publish.yml) instead of built locally. Only `web`
+# is published on the host network — `api`, `db`, and `redis` stay internal,
+# matching the firewall (ports 22/80/443 only).
+services:
+  api:
+    image: ghcr.io/jefferson22alcantara/ihouses-api:latest
+    restart: unless-stopped
+    env_file:
+      - .env
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  web:
+    image: ghcr.io/jefferson22alcantara/ihouses-web:latest
+    restart: unless-stopped
+    ports:
+      - "80:3000"
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-ihouses}:${POSTGRES_PASSWORD:-ihouses}@db:5432/${POSTGRES_DB:-ihouses}?schema=public
+      BACKEND_URL: http://api:8000
+    depends_on:
+      db:
+        condition: service_healthy
+      api:
+        condition: service_started
+
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-ihouses}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-ihouses}
+      POSTGRES_DB: ${POSTGRES_DB:-ihouses}
+    volumes:
+      - db_data:/var/lib/postgresql/data
+      - ./db/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-ihouses}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  db_data:
