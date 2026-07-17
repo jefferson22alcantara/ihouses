@@ -1,3 +1,4 @@
+# Grants SSH access to the server using the key provided via TF_VAR_ssh_public_key.
 resource "hcloud_ssh_key" "default" {
   name       = "${var.server_name}-key"
   public_key = var.ssh_public_key
