@@ -1,9 +1,5 @@
 terraform {
-  cloud {
-    organization = "ihouses"
-
-    workspaces {
-      name = "ihouses-production"
-    }
+  backend "local" {
+    path = "terraform.tfstate"
   }
 }

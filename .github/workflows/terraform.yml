@@ -1,4 +1,4 @@
-name: Terraform
+name: OpenTofu
 
 on:
   pull_request:
@@ -14,9 +14,12 @@ defaults:
   run:
     working-directory: terraform
 
+permissions:
+  contents: write
+
 jobs:
-  terraform:
-    name: Terraform Plan/Apply
+  opentofu:
+    name: OpenTofu Plan/Apply
     runs-on: ubuntu-latest
     env:
       TF_VAR_hcloud_token: ${{ secrets.HCLOUD_TOKEN }}
@@ -26,18 +29,29 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v3
+      - name: Setup OpenTofu
+        uses: opentofu/setup-opentofu@v1
 
-      - name: Terraform Init
-        run: terraform init
+      - name: OpenTofu Init
+        run: tofu init
 
-      - name: Terraform Format Check
-        run: terraform fmt -check
+      - name: OpenTofu Format Check
+        run: tofu fmt -check
 
-      - name: Terraform Plan
-        run: terraform plan -input=false
+      - name: OpenTofu Plan
+        run: tofu plan -input=false
 
-      - name: Terraform Apply
+      - name: OpenTofu Apply
         if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-        run: terraform apply -auto-approve -input=false
+        run: tofu apply -auto-approve -input=false
+
+      - name: Commit updated state
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add terraform.tfstate
+          if ! git diff --cached --quiet; then
+            git commit -m "chore: update OpenTofu state [skip ci]"
+            git push
+          fi
