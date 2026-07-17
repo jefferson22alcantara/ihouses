@@ -1,0 +1,59 @@
+generator client {
+  provider        = "prisma-client"
+  output          = "../app/generated/prisma"
+  previewFeatures = ["partialIndexes"]
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model alerts_history {
+  id                String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id           String   @db.Uuid
+  listing_title     String
+  listing_price     Decimal? @db.Decimal(10, 2)
+  listing_url       String
+  listing_source    String
+  motivation_letter String?
+  sent_to_telegram  Boolean  @default(false)
+  created_at        DateTime @default(now()) @db.Timestamptz(6)
+  users             users    @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([user_id, created_at(sort: Desc)], map: "idx_alerts_history_user_created")
+}
+
+model search_filters {
+  id            String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id       String   @db.Uuid
+  city          String
+  max_budget    Decimal  @db.Decimal(10, 2)
+  radius_km     Int      @default(5)
+  property_type String?
+  is_active     Boolean  @default(true)
+  created_at    DateTime @default(now()) @db.Timestamptz(6)
+  users         users    @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([user_id], map: "idx_search_filters_user_active", where: raw("is_active"))
+}
+
+model user_profiles {
+  id             String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id        String   @unique @db.Uuid
+  income_monthly Decimal? @db.Decimal(10, 2)
+  profession     String?
+  has_pets       Boolean  @default(false)
+  lifestyle      String?
+  updated_at     DateTime @default(now()) @db.Timestamptz(6)
+  users          users    @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+model users {
+  id               String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  email            String           @unique
+  telegram_chat_id String?          @unique
+  created_at       DateTime         @default(now()) @db.Timestamptz(6)
+  alerts_history   alerts_history[]
+  search_filters   search_filters[]
+  user_profiles    user_profiles?
+}

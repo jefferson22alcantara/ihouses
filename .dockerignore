@@ -1,0 +1,14 @@
+__pycache__/
+*.pyc
+.venv/
+venv/
+.git/
+.github/
+terraform/
+docs/
+*.md
+.env
+.env.example
+docker-compose.yml
+Dockerfile
+.dockerignore
